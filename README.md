@@ -52,6 +52,12 @@ Dodatkowe materiały: [raporty projektowe](raporty) (PDF), [modele CAD](druk3d) 
 - Połączenia sprzętowe trzeba zweryfikować z dokumentacją konkretnych modułów. Szczególnie ważne są poziomy napięć magistrali I2C oraz konfiguracja TPL5110.
 - Przed udostępnieniem systemu w sieci publicznej należy skonfigurować HTTPS, bezpieczne sekrety JWT oraz ochronę i monitoring API.
 
+## Licencja
+
+Oryginalny kod źródłowy SeedIoT jest udostępniany na warunkach [PolyForm Noncommercial License 1.0.0](LICENSE). Licencja pozwala na użycie, modyfikowanie i rozpowszechnianie oprogramowania do celów niekomercyjnych. Wykorzystanie komercyjne wymaga osobnej zgody właściwych właścicieli praw autorskich.
+
+Licencja nie zastępuje warunków licencyjnych komponentów pochodzących od innych autorów. Raporty, grafiki i modele CAD nie są automatycznie objęte licencją na oprogramowanie.
+
 ## Zespół
 
 Patryk Rusak, Zuzanna Baran, Alicja Ciepielska, Nguyen Anh Do, Antoni Kucisz.
