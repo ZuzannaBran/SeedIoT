@@ -431,7 +431,7 @@ def parse_energy_profile_command(command):
 def handle_config_packet(packet):
     global PENDING_CONFIG
 
-    print("[CONFIG] Odebrano komende konfiguracyjna: {}".format(packet))
+    print("[CONFIG] Odebrano komende: {}".format(packet.split(":", 1)[0].strip().upper()))
 
     if packet == "ACCEPT":
         config = {

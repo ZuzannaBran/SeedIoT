@@ -94,7 +94,6 @@ class BLEConfigPeripheral:
 
         if not chunk:
             print("[BLE] Odebrano pusty pakiet")
-            print("[BLE] Aktualny buffer bytes:", repr(self._config_buffer))
 
             if self._has_complete_message():
                 self._handle_complete_messages()
@@ -106,13 +105,6 @@ class BLEConfigPeripheral:
 
             return
 
-        print("[BLE] Chunk bytes:", repr(chunk))
-
-        try:
-            print("[BLE] Chunk text:", chunk.decode("utf-8"))
-        except UnicodeError:
-            print("[BLE] Chunk text: <niepoprawny albo niepelny UTF-8>")
-
         self._config_buffer += chunk
 
         print(
@@ -121,13 +113,6 @@ class BLEConfigPeripheral:
                 len(self._config_buffer),
             )
         )
-
-        print("[BLE] Buffer bytes:", repr(self._config_buffer))
-
-        try:
-            print("[BLE] Buffer text:", self._config_buffer.decode("utf-8"))
-        except UnicodeError:
-            print("[BLE] Buffer text: <niepoprawny albo niepelny UTF-8>")
 
         if not self._has_complete_message():
             if self._has_accept_command():
@@ -152,7 +137,7 @@ class BLEConfigPeripheral:
             print("[BLE] Bufor nie jest jeszcze poprawnym UTF-8")
             return False
 
-        print("[BLE] Pelny payload text:", text_payload)
+        print("[BLE] Odebrano komende:", self._get_command_name(text_payload))
 
         if not text_payload:
             print("[BLE] Wiadomosc konfiguracji jest pusta")

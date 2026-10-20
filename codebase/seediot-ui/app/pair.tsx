@@ -182,7 +182,6 @@ async function writeDeviceConfigCommand(
   const payloadBuffer = encoder.encode(commandWithPadding);
   const expectedAck = `ACK:${getCommandName(command)}`;
 
-  console.log('[BLE TX] Command text:', JSON.stringify(commandWithPadding));
   console.log('[BLE TX] Command length:', payloadBuffer.length);
 
   for (let attempt = 1; attempt <= DEVICE_CONFIG_COMMAND_RETRIES; attempt += 1) {
@@ -195,20 +194,6 @@ async function writeDeviceConfigCommand(
     for (let offset = 0; offset < payloadBuffer.length; offset += DEVICE_CONFIG_CHUNK_SIZE) {
       const chunk = payloadBuffer.subarray(offset, offset + DEVICE_CONFIG_CHUNK_SIZE);
       const encodedChunk = encodeBytesToBase64(chunk);
-
-      console.log(
-        `[BLE TX] Chunk offset=${offset}, size=${chunk.length}, bytes=`,
-        Array.from(chunk),
-      );
-
-      try {
-        console.log(
-          '[BLE TX] Chunk text:',
-          JSON.stringify(new TextDecoder().decode(chunk)),
-        );
-      } catch {
-        console.log('[BLE TX] Chunk text: <decode error>');
-      }
 
       await device.writeCharacteristicWithResponseForService(
         DEVICE_CONFIG_SERVICE_UUID,

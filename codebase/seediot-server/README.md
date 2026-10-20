@@ -1,115 +1,80 @@
-# Seediot Server
+# SeedIoT — backend API
 
-## Wstep
+API w **NestJS** i **TypeScript**, z bazą **PostgreSQL**. Odpowiada za rejestrację i logowanie użytkowników, zarządzanie stacjami oraz przechowywanie historii odczytów. Interfejs OpenAPI (Swagger) jest dostępny pod `/api`.
 
-Ten serwer to backend API dla projektu SeedIoT. Odpowiada za uwierzytelnianie uzytkownikow, zarzadzanie stacjami oraz przyjmowanie raportow z czujnikow. Udostepnia tez Swagger UI do testowania endpointow.
+## Wymagania
 
-## Technologie uzywane
+- Node.js w wersji LTS kompatybilnej z użytymi zależnościami, npm.
+- Działający PostgreSQL, do którego aplikacja może się połączyć.
 
-- Node.js + npm
-- NestJS (framework backendowy)
-- PostgreSQL (baza danych)
-- Docker + Docker Compose (uruchamianie lokalnej infrastruktury)
+Repozytorium **nie zawiera** `docker-compose.yml` ani `Dockerfile`. Bazę danych uruchamia się niezależnie od backendu, np. lokalnie lub w kontenerze.
 
-## Struktura projektu
+## Uruchomienie lokalne
 
-- `src/` - glowny kod aplikacji
-- `src/main.ts` - wejscie aplikacji i konfiguracja serwera
-- `src/app.module.ts` - glowny modul aplikacji
-- `src/auth/` - logika logowania, rejestracji i JWT
-- `src/stations/` - logika stacji i raportow
-- `src/database/` - konfiguracja polaczenia z baza
-- `test/` - testy e2e
-- `dist/` - build po kompilacji TypeScript
-- `docker-compose.yml` - lokalny Postgres i uslugi kontenerowe
-- `Dockerfile` - obraz aplikacji
-- `.env.example` - przykladowe zmienne srodowiskowe
+W katalogu `codebase/seediot-server`:
 
-## Uruchomienie
-
-Ponizej sa dwie opcje: cala aplikacja w Dockerze albo lokalnie z Postgres w Dockerze.
-
-### Wymagania
-
-- Node.js (zalecane LTS)
-- npm
-- Docker + Docker Compose
-
-### Opcja 1: Caly stack w Docker Compose
-
-1. Skopiuj plik srodowiskowy:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-2. Zbuduj i uruchom kontenery:
-
-```bash
-docker compose up --build -d
-```
-
-3. Otworz:
-
-- API: `http://localhost:3000`
-- Swagger: `http://localhost:3000/api`
-
-### Opcja 2: Postgres w Dockerze, aplikacja lokalnie
-
-1. Skopiuj plik srodowiskowy:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-2. Uruchom Postgresa:
-
-```bash
-npm run db:up
-```
-
-3. Zainstaluj zaleznosci:
-
-```bash
-npm install
-```
-
-4. Uruchom aplikacje:
-
-```bash
+~~~bash
+cp .env.example .env
+npm ci
 npm run start:dev
-```
+~~~
 
-## Konfiguracja srodowiska
+Przed uruchomieniem edytuj `.env`, ustaw odpowiednie dane PostgreSQL i **własne, losowo wygenerowane wartości** `JWT_ACCESS_SECRET` oraz `JWT_REFRESH_SECRET`. Wzorcowe sekrety z pliku `.env.example` nie nadają się do środowiska publicznego.
 
-Aplikacja czyta ustawienia z pliku `.env`. Domyslne lokalne wartosci z `.env.example`:
+Jeżeli nie masz lokalnej instancji PostgreSQL, możesz tymczasowo uruchomić bazę w osobnym kontenerze (Docker jest opcjonalny):
 
-- `POSTGRES_HOST=localhost`
-- `POSTGRES_PORT=5432`
-- `POSTGRES_DB=seediot`
-- `POSTGRES_USER=postgres`
-- `POSTGRES_PASSWORD=postgres`
-- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/seediot`
-- `JWT_ACCESS_SECRET=change-me-access`
-- `JWT_REFRESH_SECRET=change-me-refresh`
+~~~bash
+docker run --name seediot-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=seediot -p 5432:5432 -d postgres:16
+~~~
 
-W Docker Compose backend laczy sie z Postgres przez hostname `postgres`.
+Podany przykład bazy i hasła służy **wyłącznie do lokalnego developmentu**. Wartości w `.env.example` zakładają host `localhost`, port `5432` i bazę `seediot`. Serwis tworzy wymagane tabele przy inicjalizacji połączenia. W przypadku niedostępnej bazy może uruchomić się mimo ostrzeżenia, ale operacje bazodanowe nie będą działać.
 
-## Dostepne endpointy (skrót)
+## Najważniejsze endpointy
 
-- `GET /` - prosty endpoint testowy
-- `GET /health` - status aplikacji i polaczenia z baza
-- `GET /api` - Swagger UI
+| Metoda | Ścieżka | Opis |
+| --- | --- | --- |
+| GET | `/` | Odpowiedź testowa |
+| GET | `/health` | Status API i dostępności bazy |
+| POST | `/auth/register` | Rejestracja |
+| POST | `/auth/login` | Logowanie |
+| POST | `/auth/refresh` | Odświeżenie tokenu |
+| GET | `/auth/me` | Profil użytkownika (JWT) |
+| POST | `/stations` | Utworzenie stacji; klucz API zwracany jednorazowo |
+| GET | `/stations` | Lista własnych stacji (JWT) |
+| GET | `/stations/:id/reports` | Historia z paginacją i filtrami dat (JWT) |
+| DELETE | `/stations/:id` | Usunięcie własnej stacji (JWT) |
+| POST | `/station-report` | Raport urządzenia; nagłówki `x-station-id` i `x-station-key` |
 
-## Autoryzacja i raporty
+Raport urządzenia:
 
-- Uzytkownicy: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /auth/me`
-- Stacje (wymagaja JWT): `POST /stations`, `GET /stations`, `DELETE /stations/:id`, `GET /stations/:id/reports`
-- Raporty ze stacji: `POST /station-report` z naglowkami `x-station-id` i `x-station-key`
+~~~json
+{
+  "payload": {
+    "readings": {
+      "soil_moisture": { "moisture_percent": 46.2 }
+    }
+  }
+}
+~~~
 
-Przyklad przeplywu:
+Pełny kontrakt żądań i walidacja pól są określone przez kontrolery, DTO i Swagger UI pod `http://localhost:3000/api`.
 
-1. Rejestracja lub logowanie.
-2. Utworzenie stacji `POST /stations`.
-3. Zapisanie `apiKey` (pokazywany raz).
-4. Wysylanie danych z urzadzenia na `POST /station-report`.
+## Polecenia deweloperskie
+
+~~~bash
+npm run build
+npm run lint:check
+npm test -- --runInBand
+npm run test:e2e
+~~~
+
+Testy end-to-end wymagają środowiska zgodnego z konfiguracją serwera. Testy i build należy przeprowadzić po instalacji zależności; samo istnienie skryptów nie potwierdza ich poprawnego wykonania.
+
+## Bezpieczeństwo
+
+- Nie zapisuj rzeczywistych sekretów do Git; plik `.env` jest ignorowany.
+- Produkcja wymaga HTTPS, zaufanej bazy, mocnych sekretów, ograniczenia dostępu i monitoringu.
+- Klucz stacji jest zwracany tylko podczas tworzenia; backend zapisuje jego hash.
+- Identyfikatory użytkowników i stacji są kontrolowane w endpointach wymagających autoryzacji.
+
+Kod: `src/auth/`, `src/stations/`, `src/database/`.

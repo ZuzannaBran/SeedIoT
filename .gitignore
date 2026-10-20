@@ -1,1 +1,30 @@
+# Python / MicroPython
+**/__pycache__/
+*.py[cod]
+**/.pytest_cache/
+**/.micropico
+
+# Local editor configuration and generated files
+**/.idea/
+**/.vscode/
+.DS_Store
+Thumbs.db
+
+# Secrets and runtime state
+**/.env
+**/.env.*
+!**/.env.example
+**/config.json
+**/wifi_connect.py
+
+# Dependencies / compiled output
+**/node_modules/
+**/dist/
+**/build/
+**/.expo/
+**/coverage/
+**/*.tsbuildinfo
+
+# Office lock files and generated artifacts
+**/~$*
 /artifacts/android/seediot-ui-debug.apk

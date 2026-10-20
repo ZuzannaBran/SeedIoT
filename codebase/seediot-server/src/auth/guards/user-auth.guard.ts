@@ -30,10 +30,7 @@ export class UserAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync<UserJwtPayload>(token, {
-        secret: this.configService.get<string>(
-          'JWT_ACCESS_SECRET',
-          'change-me-access',
-        ),
+        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       });
 
       if (payload.type !== 'user') {

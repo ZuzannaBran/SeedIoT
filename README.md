@@ -1,24 +1,57 @@
-# Stacja monitorująca do zarządzania uprawami
+# SeedIoT
 
-## Skład zespołu
-- Patryk Rusak
-- Zuzanna Baran
-- Alicja Ciepielska
-- Nguyen Anh Do
-- Antoni Kucisz
+**SeedIoT** to zespołowy projekt systemu monitorowania warunków upraw. Łączy stację pomiarową opartą na Raspberry Pi Pico W, API obsługujące użytkowników i pomiary oraz aplikację mobilną do zarządzania stacjami i analizy odczytów.
 
-## Opis projektu
-Projekt koncentruje się na systemie inteligentnego monitorowania upraw, który rozwiązuje problem opóźnionej reakcji na zagrożenia rolnicze poprzez bieżącą analizę parametrów glebowych i atmosferycznych. Wykorzystując sieć czujników IoT, rozwiązanie umożliwia wczesne wykrywanie stresu roślin oraz zagrożeń pożarowych. Dzięki integracji danych w czasie rzeczywistym, system stanowi nowoczesną alternatywę dla czasochłonnych i nieefektywnych wizyt kontrolnych na dużych obszarach pól.
+Projekt obejmuje firmware, backend, interfejs mobilny, dokumentację sprzętową i modele elementów obudowy. Kod ma charakter projektu inżynierskiego; przed wdrożeniem terenowym wymagane są testy integracyjne, kalibracja czujników i weryfikacja zasilania.
 
-## Raporty
-Wszystkie raporty z postępów projektu są dostępne w folderze `reports`. Każdy raport zawiera szczegółowe informacje na temat realizacji poszczególnych etapów projektu.
+## Architektura
 
-## Kod projektu
-Wszystkie pliki związane z kodem projektu znajdują się w folderze `codebase`. Znajdują się tam odpowiednio:
-- `rpi-code`: kod przeznaczony do uruchomienia na Raspberry Pi, odpowiedzialny za zbieranie danych z czujników i komunikację z serwerem.
-- `seediot-server`: kod serwera, który przetwarza dane z Raspberry Pi, komunikuje się z aplikacją mobilną i zarządza bazą danych. Program napisany w języky Typescript z wykorzystaniem frameworka NestJS.
-- `seediot-ui`: kod aplikacji mobilnej, która umożliwia użytkownikom monitorowanie stanu upraw i otrzymywanie powiadomień o zagrożeniach. Program napisany w języku React Native.
-- `sensors-use-example`: przykładowy kod do testowania działania czujników, który można uruchomić na Raspberry Pi.
+~~~text
+Czujniki środowiskowe i glebowe
+              |
+     Raspberry Pi Pico W
+       MicroPython, BLE
+              |
+         Wi-Fi / HTTP
+              |
+       API NestJS (JWT)
+              |
+          PostgreSQL
+              |
+   Aplikacja React Native / Expo
+~~~
 
-## Dokumentacje modułów
-Każdy moduł(aplikacja, serwer, kod Raspberry Pi) posiada swoją własną dokumentację, która znajduje się folderze głównym każdego modułu. Dokumentacja zawiera szczegółowe instrukcje dotyczące instalacji, konfiguracji i użytkowania poszczególnych komponentów systemu.
+1. Firmware zbiera dane z czujników, udostępnia konfigurację przez BLE i wysyła raporty HTTP.
+2. API odpowiada za konta użytkowników, rejestrowanie stacji, uwierzytelnianie urządzeń i historię pomiarów.
+3. Aplikacja umożliwia logowanie, dodawanie stacji, parowanie przez BLE oraz przegląd danych pomiarowych.
+
+## Technologie
+
+| Warstwa | Technologie | Lokalizacja |
+| --- | --- | --- |
+| Firmware | MicroPython, I2C, OneWire, ADC, BLE, Wi-Fi | [codebase/rpi-code](codebase/rpi-code) |
+| Backend | TypeScript, NestJS, PostgreSQL, REST, JWT, Swagger | [codebase/seediot-server](codebase/seediot-server) |
+| Aplikacja mobilna | React Native, Expo, TypeScript, Expo Router | [codebase/seediot-ui](codebase/seediot-ui) |
+| Eksperymenty z czujnikami | Przykładowe programy MicroPython | [codebase/sensors-use-example](codebase/sensors-use-example) |
+
+## Dokumentacja i uruchamianie
+
+- [Firmware: konfiguracja, tryby pracy i testowanie](codebase/rpi-code/README.md)
+- [Backend: konfiguracja PostgreSQL i uruchomienie API](codebase/seediot-server/README.md)
+- [Aplikacja: uruchomienie i połączenie z API](codebase/seediot-ui/README.md)
+- [Architektura i konfiguracja sprzętowa](KONFIGURACJA_SPRZĘTOWA.md)
+- [Mapa połączeń oraz procedura weryfikacji](SCHEMAT_POLACZEN_FIZYCZNYCH.md)
+
+Dodatkowe materiały: [raporty projektowe](raporty) (PDF), [modele CAD](druk3d) (Fusion 360) i skrypty generowania raportów w katalogu głównym. Pliki PDF i CAD są artefaktami projektu, a nie instrukcją uruchomienia.
+
+## Stan i ograniczenia
+
+- Repozytorium zawiera implementacje poszczególnych komponentów. Ich obecność nie oznacza zakończonej walidacji całego rozwiązania w warunkach terenowych.
+- Backend wymaga uruchomionej bazy PostgreSQL. Repozytorium nie zawiera pliku Docker Compose ani Dockerfile.
+- Parowanie BLE i dostęp do Wi-Fi korzystają z natywnych modułów mobilnych; nie należy zakładać ich działania w Expo Go.
+- Połączenia sprzętowe trzeba zweryfikować z dokumentacją konkretnych modułów. Szczególnie ważne są poziomy napięć magistrali I2C oraz konfiguracja TPL5110.
+- Przed udostępnieniem systemu w sieci publicznej należy skonfigurować HTTPS, bezpieczne sekrety JWT oraz ochronę i monitoring API.
+
+## Zespół
+
+Patryk Rusak, Zuzanna Baran, Alicja Ciepielska, Nguyen Anh Do, Antoni Kucisz.

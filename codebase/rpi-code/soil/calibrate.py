@@ -1,11 +1,21 @@
-import machine
 import time
 
-soil_sensor = machine.ADC(machine.Pin(26))
+from machine import ADC, Pin
+from sensor_pins import (
+    SOIL_MOISTURE_ADC_PIN,
+    SOIL_MOISTURE_REFERENCE_VOLTAGE,
+)
 
-while True:
-    raw_value = soil_sensor.read_u16()
-    voltage = raw_value*(3.3/65535)
-    print(f"Raw ADC: {raw_value} | Voltage: {voltage:.2f} V")
-    
-    time.sleep(0.5)
+
+def main():
+    sensor = ADC(Pin(SOIL_MOISTURE_ADC_PIN))
+
+    while True:
+        raw = sensor.read_u16()
+        voltage = raw * (SOIL_MOISTURE_REFERENCE_VOLTAGE / 65535)
+        print("Raw ADC: {} | Voltage: {:.2f} V".format(raw, voltage))
+        time.sleep(0.5)
+
+
+if __name__ == "__main__":
+    main()

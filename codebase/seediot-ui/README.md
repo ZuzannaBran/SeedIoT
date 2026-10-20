@@ -1,59 +1,68 @@
-# Seediot UI
+# SeedIoT — aplikacja mobilna
 
-## Wstep
+Aplikacja w **React Native, Expo i TypeScript**. Zawiera logowanie i rejestrację, panel stacji, kreator konfiguracji urządzenia przez Bluetooth LE i widoki raportów pomiarowych.
 
-Ta aplikacja to frontend mobilny projektu SeedIoT. Umozliwia uzytkownikom logowanie, dodawanie i przeglad stacji oraz podglad raportow z czujnikow. Jest zbudowana w Expo i dziala na Android oraz iOS.
+## Wymagania
 
-## Technologie uzywane
+- Node.js i npm zgodne z zależnościami aplikacji.
+- Działający backend SeedIoT; instrukcja znajduje się w [README API](../seediot-server/README.md).
+- Dla BLE i zarządzania sieciami Wi-Fi: natywny build Android/iOS oraz odpowiednie uprawnienia systemowe.
 
-- React Native + Expo
-- TypeScript
-- Expo Router (routing oparty o strukture katalogow)
-- Tailwind/NaitveWind (stylowanie)
-
-## Struktura projektu
-
-- `app/` - ekrany i routing aplikacji
-- `app/_layout.tsx` - glowny layout nawigacji
-- `app/index.tsx` - ekran startowy
-- `app/onboard.tsx` - onboarding
-- `app/pair.tsx` - parowanie stacji
-- `app/dashboard.tsx` - panel glowny
-- `app/station/` - widoki szczegolowe stacji
-- `lib/` - logika komunikacji z API i narzedzia
-- `constants/` - stale teksty i konfiguracje
-- `assets/` - grafiki i zasoby
-- `global.css` - style globalne
-- `app.json` - konfiguracja Expo
-
-## Uruchomienie
-
-### Wymagania
-
-- Node.js (zalecane LTS)
-- npm
-- Expo CLI (uruchamiane przez `npx`)
-
-### Krok po kroku
-
-1. Zainstaluj zaleznosci:
-
-```bash
-npm install
-```
-
-2. Uruchom aplikacje:
-
-```bash
-npx expo start
-```
-
-3. Uruchom na urzadzeniu lub emulatorze:
-
-- Android emulator
-- iOS simulator
-- Expo Go
+**Expo Go nie zapewnia wymaganych niestandardowych modułów BLE i Wi-Fi.** Na potrzeby parowania użyj zbudowanej aplikacji, nie samej sesji w Expo Go. Niektóre funkcje skanowania Wi-Fi są dostępne tylko na Androidzie.
 
 ## Konfiguracja
 
-Jezeli aplikacja laczy sie z backendem, sprawdz ustawienia w plikach w `lib/` (np. adres API). W razie potrzeby zaktualizuj je do adresu lokalnego lub serwerowego.
+W katalogu `codebase/seediot-ui`:
+
+~~~bash
+npm ci
+~~~
+
+Utwórz lokalny plik `.env` z adresem backendu dostępnym zarówno z telefonu, jak i z Pico W:
+
+~~~dotenv
+EXPO_PUBLIC_API_URL=http://192.168.1.10:3000
+~~~
+
+Adres jest przykładowy. Urządzenia muszą mieć połączenie sieciowe z podanym hostem. W aplikacji istnieje mechanizm automatycznego wykrywania adresu serwera w trybie developerskim, ale jawne ustawienie `EXPO_PUBLIC_API_URL` jest bardziej przewidywalne. Nie używaj `localhost`, jeśli serwer działa na innym urządzeniu.
+
+Zmienne `EXPO_PUBLIC_*` trafiają do aplikacji klienckiej i nie mogą zawierać sekretów.
+
+## Uruchamianie
+
+~~~bash
+npm start
+npm run android
+~~~
+
+Na macOS, z wymaganym środowiskiem Xcode, można użyć `npm run ios`. Komendy `android` i `ios` budują aplikację z natywnymi integracjami. Nie każda funkcja będzie działała na symulatorze bez fizycznego Bluetooth i Wi-Fi.
+
+Kontrola statyczna:
+
+~~~bash
+npm run lint
+npm run typecheck
+~~~
+
+## Główne moduły
+
+| Ścieżka | Funkcja |
+| --- | --- |
+| `app/onboard.tsx` | Ekran powitalny, logowanie i rejestracja |
+| `app/dashboard.tsx` | Lista i przegląd stacji |
+| `app/pair.tsx` | Parowanie, BLE i konfiguracja Wi-Fi |
+| `app/station/[id].tsx` | Szczegóły stacji i wykresy |
+| `app/station/[id]/raw.tsx` | Dane raportów w postaci surowej |
+| `lib/auth-api.ts` | Klient API i wybór adresu backendu |
+| `lib/session.ts` | Przechowywanie sesji |
+| `constants/strings.ts` | Teksty i stałe interfejsu |
+
+## Typowy scenariusz
+
+1. Uruchom backend i aplikację w tej samej dostępnej sieci.
+2. Zarejestruj konto albo zaloguj się.
+3. Utwórz stację i zachowaj otrzymany jednorazowo klucz.
+4. Przeprowadź parowanie BLE i konfigurację Wi-Fi urządzenia.
+5. Zweryfikuj nadejście pomiarów na ekranie stacji i w API.
+
+Do wersji produkcyjnej używaj HTTPS; adres IP i HTTP w przykładach są przeznaczone do lokalnych testów.
